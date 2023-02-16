@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Basic Express 2010
-Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "Skin-XML-Converter", "xmlconvertgui\Skin-XML-Converter.vbproj", "{8BC630FC-FD71-4174-B2AA-225350A0B9D5}"
+Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "Kodi-Skinning-Tool", "xmlconvertgui\Kodi-Skinning-Tool.vbproj", "{8BC630FC-FD71-4174-B2AA-225350A0B9D5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -22,7 +22,7 @@ Public Class Filechooser
     Public xmlattributes As String(,)
     Public doc As New XmlDocument()
     Public xdoc As New XDocument
-    Public multiplyFactor As Double = 1.5
+    Public multiplyFactor As Double = 1.0
     Public Filepaths As New ArrayList()
     Public SafeFilepaths As New ArrayList()
     Public elementlist As XmlNodeList
@@ -34,17 +34,20 @@ Public Class Filechooser
     Public lineInfo As IXmlLineInfo
     Private Sub Filechooser_Load(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles MyBase.Load
         TabPage2.Enabled = False
-        ConversionDropDown.Items.Add("720p --> 1080p")
-        ConversionDropDown.Items.Add("1080p --> 720p")
         ConversionDropDown.Items.Add("No Change")
+        ConversionDropDown.Items.Add("720p --> 1080p")
+        ConversionDropDown.Items.Add("720p --> 2160p")
+        ConversionDropDown.Items.Add("1080p --> 2160p")
+        ConversionDropDown.Items.Add("1080p --> 720p")
+        ConversionDropDown.Items.Add("2160p --> 1080p")
+        IndentingDropDown.Items.Add("Indenting: Tab")
         IndentingDropDown.Items.Add("Indenting: 2")
         IndentingDropDown.Items.Add("Indenting: 4")
-        IndentingDropDown.Items.Add("Indenting: Tab")
         EOLComboBox.Items.Add("No Change")
         EOLComboBox.Items.Add("Windows Line Endings")
         EOLComboBox.Items.Add("Linux Line Endings")
-        ConversionDropDown.SelectedIndex = 2
-        IndentingDropDown.SelectedIndex = 1
+        ConversionDropDown.SelectedIndex = 0
+        IndentingDropDown.SelectedIndex = 0
         HeaderOption.Checked = Not HeaderOption.Checked
         EOLComboBox.SelectedIndex = 0
         RoundFactor = 1
@@ -60,7 +63,7 @@ Public Class Filechooser
         OutputFolderDialog = New FolderSelectDialog
         SkinFolderDialog = New FolderSelectDialog
         BuildFolderDialog = New FolderSelectDialog
-        OutputLog.AppendText("Program started" & vbCrLf)
+        OutputLog.AppendText("Kodi Skinning Tool 1.2.7 - by phil65 - QOL update by axbmcuser (2023-02) started" & vbCrLf & vbCrLf)
         OutputLog.AppendText("TexturePacker Path:" & TexturePackerPath & vbCrLf)
         OutputLog.AppendText("XML Folder Path:" & XMLFolder & vbCrLf)
         OutputLog.AppendText("Skin Path:" & SkinFolder & vbCrLf)
@@ -71,14 +74,23 @@ Public Class Filechooser
         xmlname.Text = Filepaths.Count.ToString + " Files chosen"
         Select Case ConversionDropDown.SelectedIndex
             Case 0
-                multiplyFactor = 1.5
-                OutputLog.AppendText("converting 720 ==> 1080: Factor 1.5" & vbCrLf)
-            Case 1
-                multiplyFactor = 0.66666666666666663
-                OutputLog.AppendText("converting 1080 ==> 720: Factor 0.6666666" & vbCrLf)
-            Case 2
-                multiplyFactor = 1
+                multiplyFactor = 1.0
                 OutputLog.AppendText("only converting Encoding / adding Headers" & vbCrLf)
+            Case 1
+                multiplyFactor = 1.5
+                OutputLog.AppendText("converting 720p --> 1080p: Factor 1.5" & vbCrLf)
+            Case 2
+                multiplyFactor = 3.0
+                OutputLog.AppendText("converting 720p --> 2160p: Factor 3" & vbCrLf)
+            Case 3
+                multiplyFactor = 2.0
+                OutputLog.AppendText("converting 1080p --> 2160p: Factor 2" & vbCrLf)
+            Case 4
+                multiplyFactor = 0.66666666666666663
+                OutputLog.AppendText("converting 1080p --> 720p: Factor 0.6666666" & vbCrLf)
+            Case 5
+                multiplyFactor = 0.5
+                OutputLog.AppendText("converting 2160p --> 1080p: Factor 0.5" & vbCrLf)
         End Select
         XMLCounter = 0
         Dim errorcounter = 0
@@ -101,14 +113,14 @@ Public Class Filechooser
         myXmlSettings.Indent = True
         Select Case IndentingDropDown.SelectedIndex
             Case 0
-                myXmlSettings.IndentChars = "  "
-                OutputLog.AppendText("Indenting: 2" & vbCrLf)
-            Case 1
-                myXmlSettings.IndentChars = "    "
-                OutputLog.AppendText("Indenting: 4" & vbCrLf)
-            Case 2
                 myXmlSettings.IndentChars = (ControlChars.Tab)
                 OutputLog.AppendText("Indenting: Tab" & vbCrLf)
+            Case 1
+                myXmlSettings.IndentChars = "  "
+                OutputLog.AppendText("Indenting: 2" & vbCrLf)
+            Case 2
+                myXmlSettings.IndentChars = "    "
+                OutputLog.AppendText("Indenting: 4" & vbCrLf)
         End Select
         InitializeProgressBar(Filepaths.Count)
         For j = 0 To Filepaths.Count - 1
@@ -206,7 +218,7 @@ Public Class Filechooser
                             If Dir$(XMLFolder, ATTR_DIRECTORY) <> "" Then
                                 Dim DirInfo As New DirectoryInfo(XMLFolder)
                                 SearchDirectory(DirInfo)
-                                OutputButton.Visible = True
+                                OutputButton.Enabled = True
                                 OutputLabel.Visible = True
                                 InitializeMediaTab()
                                 If strOutputFolder <> "" Then ConvertButton.Enabled = True
@@ -359,7 +371,7 @@ Public Class Filechooser
         Next
         For Each element In IncludeList2
             OutputLog.AppendText("Undefined Include: " & element.StringText & " - [" & element.File & " : Line " & element.Line & "]  " & vbCrLf)
-        Next  
+        Next
         OutputLog.AppendText("-- Include Check Complete --" & vbCrLf)
     End Sub
 
@@ -373,7 +385,7 @@ Public Class Filechooser
         Dim DidWork As Integer = OpenFileDialog.ShowDialog()
         If DidWork = DialogResult.Cancel Then
         Else
-            OutputButton.Visible = True
+            OutputButton.Enabled = True
             OutputLabel.Visible = True
             TexturePackerPath = OpenFileDialog.FileName
             OutputLog.AppendText("TexturePacker Path: " + TexturePackerPath & vbCrLf)
@@ -577,16 +589,16 @@ Public Class Filechooser
     End Sub
 
     Sub CheckValues(ByVal FileName As String)
-        CheckChildren("//control[@type='button']/*", {"description", "camera", "posx", "posy", "top", "bottom", "left", "right", "centertop", "centerbottom", "centerleft", "centerright", "width", "height", "visible", "colordiffuse", "texturefocus", "include", "animation", "texturenofocus", "label", "label2", "font", "textcolor", "disabledcolor", "selectedcolor", "shadowcolor", "align", "aligny", "textoffsetx", "textoffsety", "pulseonselect", "onclick", "onfocus", "onunfocus", "onup", "onleft", "onright", "ondown", "onback", "textwidth", "focusedcolor", "invalidcolor", "angle", "hitrect", "enable"})
-        CheckChildren("//control[@type='radiobutton']/*", {"description", "camera", "posx", "posy", "top", "bottom", "left", "right", "centertop", "centerbottom", "centerleft", "centerright", "width", "height", "visible", "colordiffuse", "texturefocus", "include", "animation", "texturenofocus", "label", "selected", "font", "textcolor", "disabledcolor", "selectedcolor", "shadowcolor", "align", "aligny", "textoffsetx", "textoffsety", "pulseonselect", "onclick", "onfocus", "onunfocus", "onup", "onleft", "onright", "ondown", "onback", "textwidth", "focusedcolor", "angle", "hitrect", "enable", "textureradioonfocus", "textureradioofffocus", "textureradioonnofocus", "textureradiooffnofocus", "textureradioon", "textureradiooff", "radioposx", "radioposy", "radiowidth", "radioheight"})
-        CheckChildren("//control[@type='togglebutton']/*", {"description", "camera", "posx", "posy", "top", "bottom", "left", "right", "centertop", "centerbottom", "centerleft", "centerright", "width", "height", "visible", "colordiffuse", "texturefocus", "alttexturefocus", "alttexturenofocus", "altclick", "include", "animation", "texturenofocus", "label", "altlabel", "usealttexture", "font", "textcolor", "disabledcolor", "shadowcolor", "align", "aligny", "textoffsetx", "textoffsety", "pulseonselect", "onclick", "onfocus", "onunfocus", "onup", "onleft", "onright", "ondown", "onback", "textwidth", "focusedcolor", "subtype", "hitrect", "enable"})
-        CheckChildren("//control[@type='label']/*", {"description", "camera", "posx", "posy", "top", "bottom", "left", "right", "centertop", "centerbottom", "centerleft", "centerright", "width", "height", "visible", "align", "aligny", "include", "animation", "scroll", "scrollout", "info", "number", "angle", "haspath", "label", "textcolor", "selectedcolor", "font", "shadowcolor", "disabledcolor", "pauseatend", "wrapmultiline", "scrollspeed", "scrollsuffix", "textoffsetx", "textoffsety"})
-        CheckChildren("//control[@type='textbox']/*", {"description", "camera", "posx", "posy", "top", "bottom", "left", "right", "centertop", "centerbottom", "centerleft", "centerright", "width", "height", "visible", "align", "aligny", "include", "animation", "autoscroll", "label", "info", "font", "textcolor", "selectedcolor", "shadowcolor", "pagecontrol"})
-        CheckChildren("//control[@type='edit']/*", {"description", "camera", "posx", "posy", "top", "bottom", "left", "right", "centertop", "centerbottom", "centerleft", "centerright", "width", "height", "visible", "colordiffuse", "align", "aligny", "include", "animation", "label", "hinttext", "font", "textoffsetx", "textoffsety", "pulseonselect", "textcolor", "disabledcolor", "invalidcolor", "focusedcolor", "shadowcolor", "texturefocus", "texturenofocus", "onclick", "onfocus", "onunfocus", "onup", "onleft", "onright", "ondown", "onback", "textwidth", "hitrect", "enable"})
-        CheckChildren("//control[@type='image']/*", {"description", "camera", "posx", "posy", "top", "bottom", "left", "right", "centertop", "centerbottom", "centerleft", "centerright", "width", "height", "visible", "align", "aligny", "include", "animation", "aspectratio", "fadetime", "colordiffuse", "texture", "bordertexture", "bordersize", "info"})
-        CheckChildren("//control[@type='multiimage']/*", {"description", "camera", "posx", "posy", "top", "bottom", "left", "right", "centertop", "centerbottom", "centerleft", "centerright", "width", "height", "visible", "align", "aligny", "include", "animation", "aspectratio", "fadetime", "colordiffuse", "imagepath", "timeperimage", "loop", "info", "randomize", "pauseatend"})
-        CheckChildren("//control[@type='scrollbar']/*", {"description", "camera", "posx", "posy", "top", "bottom", "left", "right", "centertop", "centerbottom", "centerleft", "centerright", "width", "height", "visible", "texturesliderbackground", "texturesliderbar", "include", "animation", "texturesliderbarfocus", "textureslidernib", "textureslidernibfocus", "pulseonselect", "orientation", "showonepage", "pagecontrol", "onclick", "onfocus", "onunfocus", "onup", "onleft", "onright", "ondown", "onback"})
-        CheckChildren("//control[@type='progress']/*", {"description", "camera", "posx", "posy", "top", "bottom", "left", "right", "centertop", "centerbottom", "centerleft", "centerright", "width", "height", "visible", "texturebg", "lefttexture", "include", "animation", "colordiffuse", "righttexture", "overlaytexture", "midtexture", "info", "reveal"})
+        CheckChildren("//control[@type='button']/*", {"description", "camera", "posx", "posy", "top", "bottom", "left", "right", "centertop", "centerbottom", "centerleft", "centerright", "width", "height", "visible", "colordiffuse", "texturefocus", "include", "animation", "texturenofocus", "label", "label2", "font", "textcolor", "disabledcolor", "selectedcolor", "shadowcolor", "align", "aligny", "textoffsetx", "textoffsety", "pulseonselect", "onclick", "onfocus", "onunfocus", "onup", "onleft", "onright", "ondown", "onback", "textwidth", "focusedcolor", "invalidcolor", "angle", "hitrect", "enable", "depth"})
+        CheckChildren("//control[@type='radiobutton']/*", {"description", "camera", "posx", "posy", "top", "bottom", "left", "right", "centertop", "centerbottom", "centerleft", "centerright", "width", "height", "visible", "colordiffuse", "texturefocus", "include", "animation", "texturenofocus", "label", "selected", "font", "textcolor", "disabledcolor", "selectedcolor", "shadowcolor", "align", "aligny", "textoffsetx", "textoffsety", "pulseonselect", "onclick", "onfocus", "onunfocus", "onup", "onleft", "onright", "ondown", "onback", "textwidth", "focusedcolor", "angle", "hitrect", "enable", "textureradioonfocus", "textureradioofffocus", "textureradioonnofocus", "textureradiooffnofocus", "textureradioon", "textureradiooff", "radioposx", "radioposy", "radiowidth", "radioheight", "textureradiooffdisabled", "textureradioondisabled", "depth"})
+        CheckChildren("//control[@type='togglebutton']/*", {"description", "camera", "posx", "posy", "top", "bottom", "left", "right", "centertop", "centerbottom", "centerleft", "centerright", "width", "height", "visible", "colordiffuse", "texturefocus", "alttexturefocus", "alttexturenofocus", "altclick", "include", "animation", "texturenofocus", "label", "altlabel", "usealttexture", "font", "textcolor", "disabledcolor", "shadowcolor", "align", "aligny", "textoffsetx", "textoffsety", "pulseonselect", "onclick", "onfocus", "onunfocus", "onup", "onleft", "onright", "ondown", "onback", "textwidth", "focusedcolor", "subtype", "hitrect", "enable", "depth"})
+        CheckChildren("//control[@type='label']/*", {"description", "camera", "posx", "posy", "top", "bottom", "left", "right", "centertop", "centerbottom", "centerleft", "centerright", "width", "height", "visible", "align", "aligny", "include", "animation", "scroll", "scrollout", "info", "number", "angle", "haspath", "label", "textcolor", "selectedcolor", "font", "shadowcolor", "disabledcolor", "pauseatend", "wrapmultiline", "scrollspeed", "scrollsuffix", "textoffsetx", "textoffsety", "depth"})
+        CheckChildren("//control[@type='textbox']/*", {"description", "camera", "posx", "posy", "top", "bottom", "left", "right", "centertop", "centerbottom", "centerleft", "centerright", "width", "height", "visible", "align", "aligny", "include", "animation", "autoscroll", "label", "info", "font", "textcolor", "selectedcolor", "shadowcolor", "pagecontrol", "depth"})
+        CheckChildren("//control[@type='edit']/*", {"description", "camera", "posx", "posy", "top", "bottom", "left", "right", "centertop", "centerbottom", "centerleft", "centerright", "width", "height", "visible", "colordiffuse", "align", "aligny", "include", "animation", "label", "hinttext", "font", "textoffsetx", "textoffsety", "pulseonselect", "textcolor", "disabledcolor", "invalidcolor", "focusedcolor", "shadowcolor", "texturefocus", "texturenofocus", "onclick", "onfocus", "onunfocus", "onup", "onleft", "onright", "ondown", "onback", "textwidth", "hitrect", "enable", "depth"})
+        CheckChildren("//control[@type='image']/*", {"description", "camera", "posx", "posy", "top", "bottom", "left", "right", "centertop", "centerbottom", "centerleft", "centerright", "width", "height", "visible", "align", "aligny", "include", "animation", "aspectratio", "fadetime", "colordiffuse", "texture", "bordertexture", "bordersize", "info", "depth"})
+        CheckChildren("//control[@type='multiimage']/*", {"description", "camera", "posx", "posy", "top", "bottom", "left", "right", "centertop", "centerbottom", "centerleft", "centerright", "width", "height", "visible", "align", "aligny", "include", "animation", "aspectratio", "fadetime", "colordiffuse", "imagepath", "timeperimage", "loop", "info", "randomize", "pauseatend", "depth"})
+        CheckChildren("//control[@type='scrollbar']/*", {"description", "camera", "posx", "posy", "top", "bottom", "left", "right", "centertop", "centerbottom", "centerleft", "centerright", "width", "height", "visible", "texturesliderbackground", "texturesliderbar", "include", "animation", "texturesliderbarfocus", "textureslidernib", "textureslidernibfocus", "pulseonselect", "orientation", "showonepage", "pagecontrol", "onclick", "onfocus", "onunfocus", "onup", "onleft", "onright", "ondown", "onback", "enable", "depth"})
+        CheckChildren("//control[@type='progress']/*", {"description", "camera", "posx", "posy", "top", "bottom", "left", "right", "centertop", "centerbottom", "centerleft", "centerright", "width", "height", "visible", "texturebg", "lefttexture", "include", "animation", "colordiffuse", "righttexture", "overlaytexture", "midtexture", "info", "reveal", "depth"})
         CheckChildren("//content/*", {"item", "include"})
         '     MoveNodeToBottom("animation")
         '    MoveNodeToBottom("visible")
@@ -687,7 +699,7 @@ Public Class Filechooser
         Dim Number As Double
         If (Not Element.Attributes(tag) Is Nothing) Then
             If (Double.TryParse(Element.Attributes(tag).InnerText.ToString, Number)) Then
-                Element.Attributes(tag).InnerText = Math.Round(XmlConvert.ToDouble(Number) / RoundFactor * XmlConvert.ToDouble(ScaleFactor)) * RoundFactor
+                Element.Attributes(tag).InnerText = Math.Round(XmlConvert.ToDouble(Number) / RoundFactor * XmlConvert.ToDouble(ScaleFactor), MidpointRounding.AwayFromZero) * RoundFactor
             End If
         End If
     End Sub
@@ -698,18 +710,18 @@ Public Class Filechooser
         ConvertValue = InputString
         If Double.TryParse(InputString, number) And (InputString <> "1") Then
             InputString = XmlConvert.ToDouble(InputString)
-            ConvertValue = Math.Round(InputString * ScaleFactor).ToString
+            ConvertValue = Math.Round(InputString * ScaleFactor, MidpointRounding.AwayFromZero).ToString
         Else
             If InputString.Length > 1 Then
                 TempLetter = InputString.Substring(InputString.Length - 1, 1)
                 InputString = InputString.Substring(0, InputString.Length - 1)
                 If Int32.TryParse(InputString, number) Then
-                    ConvertValue = Math.Round(number * multiplyFactor).ToString + TempLetter
+                    ConvertValue = Math.Round(number * multiplyFactor, MidpointRounding.AwayFromZero).ToString + TempLetter
                 Else
                     If InputString.Length > 1 Then
                         TempLetter = InputString.Substring(InputString.Length - 1, 1)
                         InputString = InputString.Substring(0, InputString.Length - 1)
-                        If Int32.TryParse(InputString, number) Then ConvertValue = Math.Round(number * multiplyFactor).ToString
+                        If Int32.TryParse(InputString, number) Then ConvertValue = Math.Round(number * multiplyFactor, MidpointRounding.AwayFromZero).ToString
                     End If
                 End If
             End If
@@ -743,12 +755,14 @@ Public Class Filechooser
     Sub changeAttributes()
         elementlist = doc.SelectNodes("//animation[@effect='zoom'] | //effect[@type='zoom']")
         For i = 0 To elementlist.Count - 1
-            convertString(elementlist(i), {"start", "end"}, False)
+            convertString(elementlist(i), {"start"})
+            convertString(elementlist(i), {"end"})
             convertString(elementlist(i), {"center"})
         Next
         elementlist = doc.SelectNodes("//animation[@effect='slide'] | //effect[@type='slide']")
         For i = 0 To elementlist.Count - 1
-            convertString(elementlist(i), {"start", "end"})
+            convertString(elementlist(i), {"start"})
+            convertString(elementlist(i), {"end"})
         Next
         elementlist = doc.SelectNodes("//animation[@effect='rotatex'] | //animation[@effect='rotatey'] | //animation[@effect='rotate'] | //effect[@type='rotate'] | //effect[@type='rotatex'] | //effect[@type='rotatey']")
         For i = 0 To elementlist.Count - 1
@@ -1037,7 +1051,7 @@ Public Class Filechooser
     End Sub
     Private Sub CheckDoubleValues()
         elementlist = doc.SelectNodes("//*")
-        Dim IgnoreList As String() = {"control", "item", "onclick", "onleft", "onright", "onup", "ondown", "property", "include", "onback", "group", "animation", "effect", "onload", "onunload", "visible", "enable", "itemlayout", "focusedlayout", "variable", "value", "altclick", "onfocus", "#comment", "default", "font", "constant", "style", "label"}
+        Dim IgnoreList As String() = {"control", "item", "onclick", "onleft", "onright", "onup", "ondown", "property", "include", "onback", "group", "animation", "effect", "onload", "onunload", "visible", "enable", "itemlayout", "focusedlayout", "variable", "value", "altclick", "onfocus", "onunfocus", "#comment", "default", "font", "constant", "style", "label", "param"}
         For i = 0 To elementlist.Count - 1
             If elementlist(i).HasChildNodes Then
                 Dim DoubleValuesList As New ArrayList()
@@ -1171,7 +1185,7 @@ Public Class Filechooser
         LabelsListRefs.Clear()
         LabelsListDefines.Clear()
         LabelsListDefinesBackup.Clear()
-        Dim text = File.ReadAllLines(SkinFolder + "\language\english\strings.po")
+        Dim text = File.ReadAllLines(SkinFolder + "\language\resource.language.en_gb\strings.po")
         For Each TextLine In text
             If TextLine.StartsWith("msgctxt") Then
                 Dim match As Match = RegExNumber.Match(TextLine)
@@ -1320,12 +1334,12 @@ Public Class Filechooser
     End Sub
 
     Private Sub SetDefaultCheckedNodes(node As TreeNodeCollection)
-        Dim blacklist As String() = {"defaultactor.png", "defaultaddon.png", "defaultaddonalbuminfo.png", "defaultaddonartistinfo.png", "defaultaddonaudiodecoder.png", "defaultaddonaudioencoder.png", "defaultaddoncontextitem.png", "defaultaddonhelper.png", "defaultaddoninfolibrary.png", "defaultaddonlanguage.png", "defaultaddonlibrary.png", "defaultaddonlyrics.png", "defaultaddonmovieinfo.png", _
-                                     "defaultaddonmusic.png", "defaultaddonmusicvideoinfo.png", "defaultaddonnone.png", "defaultaddonpicture.png", "defaultaddonprogram.png", "defaultaddonpvrclient.png", "defaultaddonrepository.png", "defaultaddonscreensaver.png", "defaultaddonservice.png", "defaultaddonskin.png", "defaultaddonsubtitles.png", "defaultaddontvinfo.png", "defaultaddonvideo.png", _
-                                     "defaultaddonvisualization.png", "defaultaddonweather.png", "defaultaddonwebskin.png", "defaultaddsource.png", "defaultalbumcover.png", "defaultartist.png", "defaultaudio.png", "defaultcdda.png", "defaultcountry.png", "defaultdirector.png", "defaultdvdempty.png", "defaultdvdrom.png", "defaultfile.png", "defaultfolder.png", "defaultfolderback.png", "defaultgenre.png", _
-                                     "defaultharddisk.png", "defaultinprogressshows.png", "defaultmovies.png", "defaultmovietitle.png", "defaultmusicalbums.png", "defaultmusicartists.png", "defaultmusiccompilations.png", "defaultmusicgenres.png", "defaultmusicplaylists.png", "defaultmusicplugins.png", "defaultmusicrecentlyadded.png", "defaultmusicrecentlyplayed.png", _
-                                     "defaultmusicsearch.png", "defaultmusicsongs.png", "defaultmusictop100.png", "defaultmusictop100albums.png", "defaultmusictop100songs.png", "defaultmusicvideos.png", "defaultmusicvideotitle.png", "defaultmusicyears.png", "defaultnetwork.png", "defaultpicture.png", "defaultplaylist.png", "defaultprogram.png", "defaultrecentlyaddedepisodes.png", _
-                                     "defaultrecentlyaddedmovies.png", "defaultrecentlyaddedmusicvideos.png", "defaultremovabledisk.png", "defaultscript.png", "defaultsets.png", "defaultshortcut.png", "defaultstudios.png", "defaulttvshows.png", "defaulttvshowtitle.png", "defaultvcd.png", "defaultvideo.png", "defaultvideocover.png", "defaultvideodeleted.png", "defaultvideoplaylists.png", _
+        Dim blacklist As String() = {"defaultactor.png", "defaultaddon.png", "defaultaddonalbuminfo.png", "defaultaddonartistinfo.png", "defaultaddonaudiodecoder.png", "defaultaddonaudioencoder.png", "defaultaddoncontextitem.png", "defaultaddonhelper.png", "defaultaddoninfolibrary.png", "defaultaddonlanguage.png", "defaultaddonlibrary.png", "defaultaddonlyrics.png", "defaultaddonmovieinfo.png",
+                                     "defaultaddonmusic.png", "defaultaddonmusicvideoinfo.png", "defaultaddonnone.png", "defaultaddonpicture.png", "defaultaddonprogram.png", "defaultaddonpvrclient.png", "defaultaddonrepository.png", "defaultaddonscreensaver.png", "defaultaddonservice.png", "defaultaddonskin.png", "defaultaddonsubtitles.png", "defaultaddontvinfo.png", "defaultaddonvideo.png",
+                                     "defaultaddonvisualization.png", "defaultaddonweather.png", "defaultaddonwebskin.png", "defaultaddsource.png", "defaultalbumcover.png", "defaultartist.png", "defaultaudio.png", "defaultcdda.png", "defaultcountry.png", "defaultdirector.png", "defaultdvdempty.png", "defaultdvdrom.png", "defaultfile.png", "defaultfolder.png", "defaultfolderback.png", "defaultgenre.png",
+                                     "defaultharddisk.png", "defaultinprogressshows.png", "defaultmovies.png", "defaultmovietitle.png", "defaultmusicalbums.png", "defaultmusicartists.png", "defaultmusiccompilations.png", "defaultmusicgenres.png", "defaultmusicplaylists.png", "defaultmusicplugins.png", "defaultmusicrecentlyadded.png", "defaultmusicrecentlyplayed.png",
+                                     "defaultmusicsearch.png", "defaultmusicsongs.png", "defaultmusictop100.png", "defaultmusictop100albums.png", "defaultmusictop100songs.png", "defaultmusicvideos.png", "defaultmusicvideotitle.png", "defaultmusicyears.png", "defaultnetwork.png", "defaultpicture.png", "defaultplaylist.png", "defaultprogram.png", "defaultrecentlyaddedepisodes.png",
+                                     "defaultrecentlyaddedmovies.png", "defaultrecentlyaddedmusicvideos.png", "defaultremovabledisk.png", "defaultscript.png", "defaultsets.png", "defaultshortcut.png", "defaultstudios.png", "defaulttvshows.png", "defaulttvshowtitle.png", "defaultvcd.png", "defaultvideo.png", "defaultvideocover.png", "defaultvideodeleted.png", "defaultvideoplaylists.png",
                                      "defaultvideoplugins.png", "defaultyear.png", "overlayhastrainer.png", "overlayhd.png", "overlaylocked.png", "overlayrar.png", "overlaytrained.png", "overlaytrainer.png", "overlayunwatched.png", "overlaywatched.png", "overlayzip.png", "rating0.png", "rating1.png", "rating2.png", "rating3.png", "rating4.png", "rating5.png"}
         For Each n As TreeNode In node
             If blacklist.Contains(n.Text.ToLower) Or n.Text.ToLower.Contains(".xbt") Then

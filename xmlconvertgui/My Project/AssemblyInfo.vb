@@ -8,10 +8,10 @@ Imports System.Runtime.InteropServices
 
 ' Die Werte der Assemblyattribute überprüfen
 
-<Assembly: AssemblyTitle("Skin XML Converter")> 
+<Assembly: AssemblyTitle("Kodi Skinning Tool")>
 <Assembly: AssemblyDescription("")> 
-<Assembly: AssemblyCompany("")> 
-<Assembly: AssemblyProduct("Skin XML Converter")> 
+<Assembly: AssemblyCompany("")>
+<Assembly: AssemblyProduct("Kodi Skinning Tool")>
 <Assembly: AssemblyCopyright("")> 
 <Assembly: AssemblyTrademark("")> 
 
@@ -31,5 +31,5 @@ Imports System.Runtime.InteropServices
 ' übernehmen, indem Sie "*" eingeben:
 ' <Assembly: AssemblyVersion("1.0.*")> 
 
-<Assembly: AssemblyVersion("1.2.6.0")> 
-<Assembly: AssemblyFileVersion("1.2.6.0")> 
+<Assembly: AssemblyVersion("1.2.7.0")> 
+<Assembly: AssemblyFileVersion("1.2.7.0")> 

@@ -1,1 +1,2 @@
-"C:\Program Files (x86)\Microsoft\ILMerge\ilmerge.exe" /v4 /out:"XBMC Skinning Tool v1.2.6.exe" "..\xmlconvertgui\bin\Release\XBMC Skinning Tool v1.2.6.exe" "..\xmlconvertgui\bin\Release\FolderSelect.dll"
+rem Edit path to ILMerge.exe if needed
+"..\packages\ILMerge.3.0.41\tools\net452\ilmerge.exe" /v4 /out:"Kodi Skinning Tool v1.2.7.exe" "..\xmlconvertgui\bin\Release\Kodi Skinning Tool v1.2.7.exe" "..\xmlconvertgui\bin\Release\FolderSelect.dll"
